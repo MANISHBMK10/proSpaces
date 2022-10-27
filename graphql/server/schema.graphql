@@ -1,0 +1,68 @@
+type Query{
+    posts(filter:String, orderBy: PostOrderByInput): [Post!]!  
+    post(id: ID!): Post
+    user(email: String!): User
+}
+
+input PostOrderByInput{
+  createdAt: Sort
+  membercount: Sort
+  duration: Sort
+}
+
+enum Sort{
+  asc
+  desc
+}
+
+type Mutation {
+  signup(email: String!,username: String!, password: String!, name: String!): AuthPayload
+  login(email: String!, password: String!): AuthPayload
+  createPost(title: String!, description: String!,goal: String!, membercount:Int!, duration:Int!, weeklyhrs:Int!, skills:[String!]!): Post!
+  applyToPost(id: ID!): Post
+  updatePost(id: ID!, title: String, description: String, goal: String, membercount:Int, duration:Int, weeklyhrs:Int, skills:[String!] ): Post
+  deletePost(id: ID!): Post
+} 
+
+type Post @cacheControl (maxAge:240){
+    id: ID!
+    title: String!
+    description: String!
+    goal: String!
+    membercount: Int!
+    duration: Int!
+    weeklyhrs:Int!
+    skills:[String!]!
+    createdAt: String!
+    postedBy: User! @cacheControl (inheritMaxAge:true)
+    appliedBy: [User!]! 
+}
+
+
+type User {
+  id: ID!
+  name: String!
+  username: String!
+  password: String!
+  email: String!
+  imageURL: String
+  posts: [Post!]!
+  appliedTo: [Post!]!
+  token:String!
+}
+
+type AuthPayload{
+    token: String
+    user: User
+}
+
+enum CacheControlScope {
+  PUBLIC
+  PRIVATE
+}
+
+directive @cacheControl(
+  maxAge: Int
+  scope: CacheControlScope
+  inheritMaxAge: Boolean
+) on FIELD_DEFINITION | OBJECT | INTERFACE | UNION
